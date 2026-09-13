@@ -1,0 +1,561 @@
+TEST123<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Term Hunter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --ground:#EEF3FF; --surface:#FFFFFF; --surface2:#F6F8FF; --ink:#1A1F3D; --ink2:#5A6080; --line:#D9DFF3;
+  --accent:#7C3AED; --accent-ink:#FFFFFF; --accent-soft:#EDE4FF;
+  --gold:#FFB800; --gold-soft:#FFF3CC;
+  --good:#16A34A; --good-soft:#DCFCE7; --bad:#DC2626; --bad-soft:#FEE2E2;
+  --tile:#FFFFFF; --tile-line:#C9D2F0; --shadow:0 6px 0 #C9D2F0;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#12152B; --surface:#1C2140; --surface2:#232955; --ink:#EEF0FF; --ink2:#A9AFD6; --line:#343B66;
+    --accent:#A78BFA; --accent-ink:#12152B; --accent-soft:#2E2A5C;
+    --gold:#FFC53D; --gold-soft:#3D3416;
+    --good:#4ADE80; --good-soft:#153B27; --bad:#F87171; --bad-soft:#4A1D1D;
+    --tile:#232955; --tile-line:#3D4580; --shadow:0 6px 0 #0D1024;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#12152B; --surface:#1C2140; --surface2:#232955; --ink:#EEF0FF; --ink2:#A9AFD6; --line:#343B66;
+  --accent:#A78BFA; --accent-ink:#12152B; --accent-soft:#2E2A5C;
+  --gold:#FFC53D; --gold-soft:#3D3416;
+  --good:#4ADE80; --good-soft:#153B27; --bad:#F87171; --bad-soft:#4A1D1D;
+  --tile:#232955; --tile-line:#3D4580; --shadow:0 6px 0 #0D1024;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-block:20px;padding-inline:16px;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.app{max-width:820px;margin:0 auto}
+[hidden]{display:none!important}
+
+/* header */
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,40px);margin:0;letter-spacing:.5px;line-height:1.1}
+.brand h1 span{color:var(--accent)}
+.brand .sub{color:var(--ink2);font-weight:600;font-size:14px;margin:0}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--ink2)}
+
+/* start screen */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
+.levels{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.lvl{border:2px solid var(--line);background:var(--surface2);border-radius:999px;padding:6px 16px;font-weight:800;font-family:var(--display);font-size:16px}
+.lvl[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lvl-desc{color:var(--ink2);font-size:14px;margin:8px 0 0;min-height:22px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.mode{text-align:left;background:var(--surface2);border:2px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px;transition:transform .12s, border-color .12s}
+.mode:hover{transform:translateY(-2px);border-color:var(--accent)}
+.mode .name{font-family:var(--display);font-weight:600;font-size:22px}
+.mode .desc{color:var(--ink2);font-size:14px}
+.mode .strip{font-family:var(--display);font-weight:600;color:var(--accent);font-size:15px;letter-spacing:.06em}
+.campaign{margin-top:18px}
+.camp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+.camp{background:var(--surface2);border:2px solid var(--line);border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.camp .n{font-family:var(--display);font-weight:700;font-size:26px}
+.camp .stars{color:var(--gold);letter-spacing:2px;font-size:16px;min-height:24px}
+.camp .best{font-size:12px;color:var(--ink2)}
+.camp.locked{opacity:.55;cursor:not-allowed}
+.camp:not(.locked):hover{border-color:var(--accent)}
+
+/* game */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.hud .left{display:flex;flex-direction:column}
+.hud .modename{font-family:var(--display);font-weight:600;font-size:20px}
+.hud .stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 12px;display:flex;flex-direction:column;align-items:center;min-width:76px}
+.stat .v{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:800}
+.stat.streak .v{color:var(--gold)}
+.timer{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin-bottom:18px}
+.timer i{display:block;height:100%;background:var(--accent);width:100%;border-radius:999px}
+.timer.low i{background:var(--bad)}
+
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 18px}
+.prompt{font-weight:700;font-size:clamp(17px,2.6vw,20px);margin:0 0 16px;text-wrap:balance}
+.strip{display:flex;align-items:flex-start;justify-content:center;gap:0;flex-wrap:wrap;row-gap:18px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tile{min-width:64px;height:64px;padding:0 12px;border-radius:14px;background:var(--tile);border:2px solid var(--tile-line);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:clamp(20px,4vw,30px);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile.blank{border-style:dashed;color:var(--accent);background:var(--accent-soft)}
+.tile.blank.revealed{border-style:solid;background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.cell .n{font-size:12px;color:var(--ink2);font-weight:700;font-variant-numeric:tabular-nums}
+.gap{width:56px;display:flex;align-items:center;justify-content:center;height:64px;flex:0 0 auto}
+.gap .chip{font-family:var(--display);font-weight:600;font-size:14px;background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold);border-radius:999px;padding:2px 8px;white-space:nowrap;opacity:0;transform:translateY(6px);transition:opacity .25s, transform .25s}
+.gap .chip.show{opacity:1;transform:none}
+.gap .chip.plain{background:var(--surface2);border-color:var(--line)}
+.gap.arrow::before{content:"";position:absolute}
+
+.answer{margin-top:22px}
+.inputrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.inputrow input{font-family:var(--display);font-size:26px;font-weight:600;width:170px;max-width:100%;padding:8px 14px;border-radius:14px;border:2px solid var(--tile-line);background:var(--surface2);color:var(--ink);text-align:center}
+.btn{border:none;border-radius:14px;padding:12px 22px;font-weight:800;font-size:16px;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.ghost{background:var(--surface2);color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:560px;margin:0 auto}
+.choices.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:480px){.choices.three{grid-template-columns:1fr}}
+.choice{background:var(--surface2);border:2px solid var(--line);border-radius:16px;padding:16px 12px;font-family:var(--display);font-weight:600;font-size:22px;transition:border-color .12s, transform .08s}
+.choice:hover{border-color:var(--accent);transform:translateY(-1px)}
+.choice.small{font-size:18px}
+.choice.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.choice.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.choice:disabled{cursor:default}
+.choice sup{font-size:.6em}
+
+.feedback{margin-top:18px;border-radius:16px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.feedback.good{background:var(--good-soft);border:1px solid var(--good)}
+.feedback.bad{background:var(--bad-soft);border:1px solid var(--bad)}
+.feedback .head{font-family:var(--display);font-weight:700;font-size:20px;margin:0 0 4px}
+.feedback.good .head{color:var(--good)}
+.feedback.bad .head{color:var(--bad)}
+.feedback .text{margin:0;flex:1 1 260px}
+.feedback .text sup{font-size:.7em}
+.feedback .btn{align-self:center}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dot.now{background:var(--accent)}
+.dot.ok{background:var(--good)}
+.dot.no{background:var(--bad)}
+.quitrow{display:flex;justify-content:center;margin-top:16px}
+.link{background:none;border:none;color:var(--ink2);font-weight:700;text-decoration:underline;padding:6px}
+
+/* summary */
+.summary{text-align:center}
+.summary h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,36px);margin:0 0 4px}
+.summary .big{font-family:var(--display);font-weight:700;font-size:64px;line-height:1;color:var(--accent);margin:8px 0}
+.summary .stars{color:var(--gold);font-size:34px;letter-spacing:6px;min-height:44px}
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:420px;margin:12px auto 18px}
+.sumgrid .stat{min-width:0}
+.summary .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.note{color:var(--ink2);font-size:14px;margin:8px 0 0}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pop{animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="brand">
+    <div>
+      <h1>Term <span>Hunter</span></h1>
+      <p class="sub">Sequences practice for Grade 8B</p>
+    </div>
+    <div class="eyebrow" id="bestline">Best streak: 0</div>
+  </header>
+
+  <!-- START -->
+  <section id="start" class="panel">
+    <div class="eyebrow">Choose a level</div>
+    <div class="levels" id="levels" role="group" aria-label="Level"></div>
+    <p class="lvl-desc" id="lvldesc"></p>
+
+    <div class="eyebrow" style="margin-top:18px">Pick a game (10 questions)</div>
+    <div class="modes">
+      <button class="mode" data-mode="next">
+        <span class="name">Next Term</span>
+        <span class="strip">5, 9, 13, 17, ?</span>
+        <span class="desc">Type the next term, or the missing one in the middle.</span>
+      </button>
+      <button class="mode" data-mode="rule">
+        <span class="name">Find the Rule</span>
+        <span class="strip">+4 &nbsp;or&nbsp; 4n + 1</span>
+        <span class="desc">Choose the term-to-term rule, or the nth term at higher levels.</span>
+      </button>
+      <button class="mode" data-mode="detective">
+        <span class="name">Sequence Detective</span>
+        <span class="strip">arithmetic / geometric / neither</span>
+        <span class="desc">Look at the differences and ratios, then decide.</span>
+      </button>
+    </div>
+
+    <div class="campaign">
+      <div class="eyebrow">Campaign (8 mixed questions per level, score 6 to unlock the next)</div>
+      <div class="camp-grid" id="campgrid"></div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" hidden>
+    <div class="hud">
+      <div class="left">
+        <span class="modename" id="modename">Next Term</span>
+        <span class="eyebrow" id="qcount">Question 1 of 10</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="v" id="score">0</span><span class="k">Score</span></div>
+        <div class="stat streak"><span class="v" id="streak">0</span><span class="k">Streak</span></div>
+        <div class="stat"><span class="v" id="clock">25</span><span class="k">Seconds</span></div>
+      </div>
+    </div>
+    <div class="timer" id="timer"><i id="timerbar"></i></div>
+
+    <div class="stage">
+      <p class="prompt" id="prompt"></p>
+      <div class="strip" id="strip"></div>
+      <div class="answer" id="answer"></div>
+      <div id="feedback" hidden></div>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="quitrow"><button class="link" id="quit">Back to menu</button></div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary" class="panel summary" hidden>
+    <div class="eyebrow" id="sumeyebrow">Round complete</div>
+    <h2 id="sumtitle">Well hunted!</h2>
+    <div class="stars" id="sumstars"></div>
+    <div class="big" id="sumscore">0</div>
+    <div class="eyebrow">points</div>
+    <div class="sumgrid">
+      <div class="stat"><span class="v" id="sumright">0</span><span class="k">Correct</span></div>
+      <div class="stat"><span class="v" id="sumacc">0%</span><span class="k">Accuracy</span></div>
+      <div class="stat streak"><span class="v" id="sumstreak">0</span><span class="k">Best streak</span></div>
+    </div>
+    <p class="note" id="sumnote"></p>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="again">Play again</button>
+      <button class="btn ghost" id="nextlevel" hidden>Next level</button>
+      <button class="btn ghost" id="menu">Menu</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rnd(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmt=x=>{const s=Number.isInteger(x)?String(x):String(Math.round(x*100)/100);return s.replace('-','−');};
+const signed=x=>(x<0?'−':'+')+fmt(Math.abs(x));
+const SEC=25, ROUND=10, CAMP_Q=8, PASS=6;
+const LEVEL_DESC={
+  1:'Arithmetic with small positive differences, simple doubling and tripling.',
+  2:'Negative differences, halving, and missing terms in the middle.',
+  3:'Bigger jumps, ratios up to 5, and nth terms of the form an + b.',
+  4:'Negative ratios such as ×2 with alternating signs, harder detective work.',
+  5:'nth terms for geometric sequences too. Everything mixed.'
+};
+const MODE_NAME={next:'Next Term',rule:'Find the Rule',detective:'Sequence Detective',campaign:'Campaign'};
+
+/* ---------- storage ---------- */
+function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+let campaign=load('termhunter.campaign',{unlocked:1,best:{}});
+let bestStreak=load('termhunter.beststreak',0);
+
+/* ---------- sequence generators ---------- */
+function arith(level){
+  let a,d;
+  if(level===1){a=rnd(1,15);d=rnd(2,9);}
+  else if(level===2){a=rnd(5,45);d=pick([-1,1])*rnd(2,9);}
+  else if(level===3){a=rnd(-20,30);d=pick([-1,1])*rnd(3,15);}
+  else if(level===4){a=rnd(-50,50);d=pick([-1,1])*rnd(6,25);}
+  else {a=rnd(-30,60);d=pick([-1,1])*rnd(2,12);}
+  return {kind:'arith',a,d,term:n=>a+(n-1)*d};
+}
+function geo(level){
+  let a,r;
+  const halving=()=>{a=pick([160,240,320,400,480]);r=0.5;};
+  if(level===1){a=rnd(1,5);r=pick([2,3]);}
+  else if(level===2){if(Math.random()<0.4)halving();else{a=rnd(1,6);r=pick([2,3]);}}
+  else if(level===3){if(Math.random()<0.3)halving();else{a=rnd(2,7);r=pick([2,3,4,5]);}}
+  else if(level===4){a=rnd(1,6);r=pick([-2,-3,2,3,4]);}
+  else {if(Math.random()<0.25)halving();else{a=rnd(1,7);r=pick([-2,-3,2,3,4,5]);}}
+  return {kind:'geo',a,r,term:n=>a*Math.pow(r,n-1)};
+}
+function neither(level){
+  const c=rnd(0,6);
+  const pool=[
+    {name:'square numbers',rule:'the square numbers n<sup>2</sup>',term:n=>n*n},
+    {name:'square numbers plus '+c,rule:'n<sup>2</sup> + '+c+' (square numbers shifted up)',term:n=>n*n+c},
+    {name:'triangular numbers',rule:'the triangular numbers (add 2, then 3, then 4 ...)',term:n=>n*(n+1)/2},
+    {name:'cube numbers',rule:'the cube numbers n<sup>3</sup>',term:n=>n*n*n},
+    {name:'a Fibonacci-style sequence',rule:'each term is the sum of the two before it',fib:true},
+    {name:'double and add 1',rule:'each term is doubled then 1 is added',term:n=>Math.pow(2,n)-1},
+    {name:'prime numbers',rule:'the prime numbers',list:[2,3,5,7,11,13,17]},
+    {name:'n<sup>2</sup> + n',rule:'n<sup>2</sup> + n (the differences grow by 2 each time)',term:n=>n*n+n},
+    {name:'2n<sup>2</sup>',rule:'2n<sup>2</sup> (a quadratic sequence with second difference 4)',term:n=>2*n*n}
+  ];
+  let choices=level<=2?pool.slice(0,4):pool;
+  const p=pick(choices);
+  let term=p.term;
+  if(p.fib){const x=rnd(1,4),y=rnd(x,x+4);const s=[x,y];for(let i=2;i<8;i++)s.push(s[i-1]+s[i-2]);term=n=>s[n-1];}
+  if(p.list){term=n=>p.list[n-1];}
+  return {kind:'neither',name:p.name,rule:p.rule,term};
+}
+function terms(seq,count){const t=[];for(let n=1;n<=count;n++)t.push(seq.term(n));return t;}
+function isValidNeither(t){
+  const d=[],r=[];for(let i=1;i<t.length;i++){d.push(t[i]-t[i-1]);r.push(t[i]/t[i-1]);}
+  return !(d.every(x=>x===d[0])||r.every(x=>Math.abs(x-r[0])<1e-9));
+}
+
+/* ---------- rule formatting ---------- */
+function linear(d,c){
+  const coef=d===1?'n':d===-1?'−n':fmt(d)+'n';
+  if(c===0)return coef;
+  if(d<0&&c>0)return fmt(c)+' − '+fmt(-d)+'n';
+  return coef+(c>0?' + '+fmt(c):' − '+fmt(-c));
+}
+function geoNth(a,r){return fmt(a)+' × '+(r<0?'('+fmt(r)+')':fmt(r))+'<sup>n − 1</sup>';}
+function geoN(a,r){return fmt(a)+' × '+(r<0?'('+fmt(r)+')':fmt(r))+'<sup>n</sup>';}
+function stepRule(seq){
+  if(seq.kind==='arith')return signed(seq.d);
+  if(seq.r===0.5)return '÷2';
+  return '×'+fmt(seq.r);
+}
+function uniq4(correct,cands){const out=[correct];for(const c of cands){if(out.length>=4)break;if(!out.includes(c))out.push(c);}
+  let k=2;while(out.length<4){const extra=correct+' '+'·'.repeat(k++);if(!out.includes(extra))out.push(extra);}return out;}
+
+/* ---------- question builders ---------- */
+function qNext(level){
+  const seq=Math.random()<(level===1?0.35:0.5)?geo(level):arith(level);
+  const shown=5;
+  const t=terms(seq,shown);
+  const missingMiddle=level>=2&&Math.random()<0.4;
+  const idx=missingMiddle?rnd(1,shown-2):shown-1;
+  const display=t.map((v,i)=>i===idx?null:v);
+  const ans=t[idx];
+  const stepTxt=seq.kind==='arith'
+    ?'Common difference d = '+signed(seq.d)+' (each term adds '+fmt(seq.d)+').'
+    :'Common ratio r = '+fmt(seq.r)+' (each term is '+stepRule(seq)+' the one before).';
+  const how=idx>0
+    ?'Term '+(idx+1)+' = '+fmt(t[idx-1])+' '+(seq.kind==='arith'?signed(seq.d):stepRule(seq).replace(/([×÷])/,'$1 '))+' = '+fmt(ans)+'.'
+    :'Term 1 = '+fmt(t[1])+' '+(seq.kind==='arith'?signed(-seq.d):(seq.r===0.5?'×2':'÷'+fmt(seq.r)))+' = '+fmt(ans)+'.';
+  return {type:'next',seq,terms:display,full:t,answer:ans,
+    prompt:missingMiddle?'Find the missing term.':'What is the next term?',
+    explain:stepTxt+' '+how};
+}
+function qRule(level){
+  const useNth=level>=3;
+  const seq=(useNth&&level<5)?arith(level):(Math.random()<0.45?geo(level):arith(level));
+  const t=terms(seq,5);
+  let choices,explain;
+  if(!useNth){
+    const correct=stepRule(seq);
+    let cands;
+    if(seq.kind==='arith'){cands=shuffle(['×'+fmt(Math.abs(seq.d)),signed(-seq.d),signed(seq.d+pick([-1,1,2])),signed(seq.a)]);}
+    else if(seq.r===0.5){cands=shuffle(['÷4','×2',signed(t[1]-t[0]),'−2']);}
+    else{cands=shuffle([signed(seq.r),'×'+fmt(seq.r+1),signed(t[1]-t[0]),'×'+fmt(seq.r-1)]);}
+    choices=shuffle(uniq4(correct,cands));
+    explain=seq.kind==='arith'
+      ?'From '+fmt(t[0])+' to '+fmt(t[1])+' is '+signed(seq.d)+', and it stays '+signed(seq.d)+' at every step, so the rule is '+correct+'.'
+      :'From '+fmt(t[0])+' to '+fmt(t[1])+' is '+correct+', and the same happens at every step, so the rule is '+correct+'.';
+    return {type:'rule',seq,terms:t,full:t,prompt:'Which term-to-term rule makes this sequence?',choices,answer:correct,explain};
+  }
+  if(seq.kind==='arith'){
+    const c=seq.a-seq.d;
+    const correct=linear(seq.d,c);
+    const cands=shuffle([linear(seq.d,seq.a),linear(seq.d+1,c),linear(seq.d,-c),linear(seq.a,seq.d),linear(seq.d,c+seq.d)]);
+    choices=shuffle(uniq4(correct,cands));
+    explain='d = '+signed(seq.d)+', so the nth term starts with '+(seq.d===1?'n':seq.d===-1?'−n':fmt(seq.d)+'n')+'. Term 1 is '+fmt(seq.a)+' and '+fmt(seq.d)+' × 1 = '+fmt(seq.d)+', so the constant is '+fmt(seq.a)+' '+signed(-seq.d)+' = '+fmt(c)+'. nth term = '+correct+'. Check n = 3: '+fmt(seq.d)+' × 3 '+signed(c)+' = '+fmt(t[2])+'.';
+    return {type:'rule',seq,terms:t,full:t,prompt:'Which expression gives the nth term?',choices,answer:correct,explain,small:true};
+  }
+  const correct=geoNth(seq.a,seq.r);
+  const alt=seq.a===seq.r?geoNth(seq.a,seq.r+1):geoNth(seq.r,seq.a);
+  const cands=shuffle([geoN(seq.a,seq.r),alt,geoNth(seq.a*seq.r,seq.r),geoNth(seq.a,seq.r+1)]);
+  choices=shuffle(uniq4(correct,cands));
+  explain='First term a = '+fmt(seq.a)+' and common ratio r = '+fmt(seq.r)+'. For a geometric sequence the nth term is a × r<sup>n − 1</sup>, so it is '+correct+'. Check n = 3: '+fmt(seq.a)+' × '+fmt(seq.r)+'<sup>2</sup> = '+fmt(t[2])+'.';
+  return {type:'rule',seq,terms:t,full:t,prompt:'Which expression gives the nth term?',choices,answer:correct,explain,small:true};
+}
+function qDetective(level){
+  const roll=Math.random();
+  let seq;
+  if(roll<0.36)seq=arith(level);
+  else if(roll<0.68)seq=geo(level);
+  else{let tries=0;do{seq=neither(level);tries++;}while(tries<10&&!isValidNeither(terms(seq,5)));}
+  const t=terms(seq,5);
+  const d=[];for(let i=1;i<5;i++)d.push(t[i]-t[i-1]);
+  let answer,explain;
+  if(seq.kind==='arith'){answer='arithmetic';explain='The differences are '+d.map(signed).join(', ')+': the same every time, so it is arithmetic with d = '+signed(seq.d)+'.';}
+  else if(seq.kind==='geo'){answer='geometric';explain='The differences change ('+d.map(signed).join(', ')+') but each term is '+stepRule(seq)+' the one before: a constant ratio, so it is geometric with r = '+fmt(seq.r)+'.';}
+  else{answer='neither';explain='The differences are '+d.map(signed).join(', ')+', not constant, and the ratios are not constant either. These are '+seq.name+': '+seq.rule+'.';}
+  return {type:'detective',seq,terms:t,full:t,prompt:'Arithmetic, geometric, or neither?',choices:['arithmetic','geometric','neither'],answer,explain};
+}
+function makeQuestion(kind,level){
+  if(kind==='next')return qNext(level);
+  if(kind==='rule')return qRule(level);
+  return qDetective(level);
+}
+
+/* ---------- state ---------- */
+let S={screen:'start',level:1,mode:null,questions:[],i:0,score:0,streak:0,best:0,results:[],answered:false,timeLeft:SEC};
+let timerId=null;
+
+function snapshot(){return {level:S.level,best:bestStreak};}
+if(window.claude&&window.claude.hot&&window.claude.hot.snapshot){try{window.claude.hot.snapshot(snapshot);}catch(e){}}
+
+/* ---------- start screen ---------- */
+function renderStart(){
+  const L=$('levels');L.innerHTML='';
+  for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='lvl';b.textContent='Level '+i;b.setAttribute('aria-pressed',String(i===S.level));b.id='lvl'+i;b.onclick=()=>{S.level=i;renderStart();};L.appendChild(b);}
+  $('lvldesc').textContent=LEVEL_DESC[S.level];
+  const G=$('campgrid');G.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('button');b.className='camp'+(i>campaign.unlocked?' locked':'');b.id='camp'+i;
+    const best=campaign.best[i];
+    const stars=best==null?'':'★'.repeat(starsFor(best))+'☆'.repeat(3-starsFor(best));
+    b.innerHTML='<span class="n">'+i+'</span><span class="stars">'+(i>campaign.unlocked?'○○○':stars||'☆☆☆')+'</span><span class="best">'+(best==null?(i>campaign.unlocked?'Locked':'Not played'):'Best '+best+' / '+CAMP_Q)+'</span>';
+    b.disabled=i>campaign.unlocked;
+    b.onclick=()=>startRound('campaign',i);
+    G.appendChild(b);
+  }
+  $('bestline').textContent='Best streak: '+bestStreak;
+}
+function starsFor(n){return n>=8?3:n>=7?2:n>=6?1:0;}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>startRound(b.dataset.mode,S.level));
+
+/* ---------- round ---------- */
+function startRound(mode,level){
+  S.mode=mode;S.level=level;S.i=0;S.score=0;S.streak=0;S.best=0;S.results=[];S.answered=false;
+  const n=mode==='campaign'?CAMP_Q:ROUND;
+  S.questions=[];
+  const kinds=['next','rule','detective'];
+  for(let k=0;k<n;k++){const kind=mode==='campaign'?kinds[k%3]:mode;S.questions.push(makeQuestion(kind,level));}
+  if(mode==='campaign')S.questions=shuffle(S.questions);
+  show('game');
+  $('modename').textContent=MODE_NAME[mode]+' · Level '+level;
+  renderQuestion();
+}
+function show(id){['start','game','summary'].forEach(s=>$(s).hidden=s!==id);S.screen=id;}
+
+function renderQuestion(){
+  const q=S.questions[S.i];S.answered=false;
+  $('qcount').textContent='Question '+(S.i+1)+' of '+S.questions.length;
+  $('score').textContent=S.score;$('streak').textContent=S.streak;
+  $('prompt').innerHTML=q.prompt;
+  const strip=$('strip');strip.innerHTML='';
+  q.terms.forEach((v,i)=>{
+    if(i>0){const g=document.createElement('div');g.className='gap';g.innerHTML='<span class="chip" id="chip'+i+'"></span>';strip.appendChild(g);}
+    const c=document.createElement('div');c.className='cell';
+    c.innerHTML='<div class="tile'+(v===null?' blank':'')+'" id="tile'+i+'">'+(v===null?'?':fmt(v))+'</div><span class="n">n = '+(i+1)+'</span>';
+    strip.appendChild(c);
+  });
+  if(q.type==='next'&&q.terms[q.terms.length-1]!==null){
+    const g=document.createElement('div');g.className='gap';g.innerHTML='<span class="chip" id="chip'+q.terms.length+'"></span>';strip.appendChild(g);
+    const c=document.createElement('div');c.className='cell';c.innerHTML='<div class="tile blank" id="tile'+q.terms.length+'">?</div><span class="n">n = '+(q.terms.length+1)+'</span>';strip.appendChild(c);
+  }
+  const A=$('answer');A.innerHTML='';
+  if(q.type==='next'){
+    A.innerHTML='<div class="inputrow"><input type="text" inputmode="decimal" id="ans" placeholder="?" autocomplete="off" aria-label="Your answer"><button class="btn" id="check">Check</button></div>';
+    $('check').onclick=()=>submitNumeric();
+    $('ans').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitNumeric();}});
+    setTimeout(()=>{try{$('ans').focus();}catch(e){}},50);
+  }else{
+    const grid=document.createElement('div');grid.className='choices'+(q.type==='detective'?' three':'');
+    q.choices.forEach((c,k)=>{const b=document.createElement('button');b.className='choice'+(q.small?' small':'');b.id='choice'+k;b.innerHTML=c;b.dataset.val=c;b.onclick=()=>submitChoice(c,b);grid.appendChild(b);});
+    A.appendChild(grid);
+  }
+  $('feedback').hidden=true;$('feedback').innerHTML='';
+  renderDots();startTimer();
+}
+function renderDots(){
+  const D=$('dots');D.innerHTML='';
+  S.questions.forEach((q,k)=>{const d=document.createElement('span');d.className='dot'+(k===S.i&&!S.answered?' now':S.results[k]===true?' ok':S.results[k]===false?' no':'');D.appendChild(d);});
+}
+
+/* ---------- timer ---------- */
+function startTimer(){
+  stopTimer();S.timeLeft=SEC;const bar=$('timerbar');const T=$('timer');T.classList.remove('low');
+  bar.style.width='100%';$('clock').textContent=SEC;
+  const t0=Date.now();
+  timerId=setInterval(()=>{
+    const left=Math.max(0,SEC-(Date.now()-t0)/1000);S.timeLeft=left;
+    bar.style.width=(left/SEC*100)+'%';$('clock').textContent=Math.ceil(left);
+    if(left<=6)T.classList.add('low');
+    if(left<=0){stopTimer();resolve(false,null,true);}
+  },100);
+}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+
+/* ---------- answering ---------- */
+function submitNumeric(){
+  if(S.answered)return;
+  const raw=($('ans').value||'').trim().replace('−','-').replace(',','.');
+  if(raw===''||isNaN(Number(raw))){$('ans').classList.remove('shake');void $('ans').offsetWidth;$('ans').classList.add('shake');return;}
+  const q=S.questions[S.i];
+  resolve(Math.abs(Number(raw)-q.answer)<1e-9,null,false);
+}
+function submitChoice(val,btn){if(S.answered)return;const q=S.questions[S.i];resolve(val===q.answer,btn,false);}
+
+function resolve(correct,btn,timedOut){
+  if(S.answered)return;S.answered=true;stopTimer();
+  const q=S.questions[S.i];
+  S.results[S.i]=correct;
+  if(correct){S.streak++;S.best=Math.max(S.best,S.streak);const bonus=Math.min(S.streak-1,5)*2+(S.timeLeft>15?3:0);S.score+=10+bonus;
+    if(S.streak>bestStreak){bestStreak=S.streak;save('termhunter.beststreak',bestStreak);}}
+  else S.streak=0;
+  $('score').textContent=S.score;$('streak').textContent=S.streak;
+  $('score').classList.remove('pop');void $('score').offsetWidth;if(correct)$('score').classList.add('pop');
+  /* reveal tiles and step chips */
+  const full=q.full;
+  full.forEach((v,i)=>{const t=$('tile'+i);if(t&&t.classList.contains('blank')){t.textContent=fmt(v);t.classList.add('revealed');}});
+  for(let i=1;i<full.length;i++){const ch=$('chip'+i);if(!ch)continue;
+    let label;
+    if(q.seq.kind==='arith')label=signed(full[i]-full[i-1]);
+    else if(q.seq.kind==='geo')label=stepRule(q.seq);
+    else{label=signed(full[i]-full[i-1]);ch.classList.add('plain');}
+    ch.textContent=label;setTimeout(()=>ch.classList.add('show'),60*i);}
+  /* mark choices */
+  if(q.type!=='next'){document.querySelectorAll('.choice').forEach(b=>{b.disabled=true;if(b.dataset.val===q.answer)b.classList.add('right');else if(b===btn)b.classList.add('wrong');});}
+  else{const inp=$('ans');inp.disabled=true;$('check').disabled=true;if(!correct){inp.classList.add('shake');}}
+  /* feedback */
+  const F=$('feedback');F.hidden=false;F.className='feedback '+(correct?'good':'bad');
+  const head=correct?pick(['Correct!','Nice hunting!','Spot on!','That is it!']):timedOut?'Time is up':'Not this time';
+  const ansLine=correct?'':(q.type==='next'?'The answer is '+fmt(q.answer)+'. ':'The answer is '+q.answer+'. ');
+  F.innerHTML='<div class="text"><p class="head">'+head+'</p><p style="margin:0">'+ansLine+q.explain+'</p></div><button class="btn" id="next">'+(S.i+1<S.questions.length?'Next':'See results')+'</button>';
+  $('next').onclick=advance;
+  setTimeout(()=>{try{$('next').focus();}catch(e){}},50);
+  renderDots();
+}
+function advance(){
+  S.i++;
+  if(S.i<S.questions.length)renderQuestion();else finishRound();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&S.screen==='game'&&S.answered){e.preventDefault();advance();}});
+
+/* ---------- summary ---------- */
+function finishRound(){
+  stopTimer();
+  const right=S.results.filter(Boolean).length,n=S.questions.length;
+  $('sumscore').textContent=S.score;$('sumright').textContent=right+' / '+n;
+  $('sumacc').textContent=Math.round(right/n*100)+'%';$('sumstreak').textContent=S.best;
+  $('sumeyebrow').textContent=MODE_NAME[S.mode]+' · Level '+S.level;
+  const NL=$('nextlevel');NL.hidden=true;
+  if(S.mode==='campaign'){
+    const st=starsFor(right);
+    $('sumstars').textContent='★'.repeat(st)+'☆'.repeat(3-st);
+    const prev=campaign.best[S.level];if(prev==null||right>prev)campaign.best[S.level]=right;
+    if(right>=PASS){
+      $('sumtitle').textContent=st===3?'Perfect level!':'Level cleared!';
+      if(S.level<5){if(campaign.unlocked<S.level+1)campaign.unlocked=S.level+1;$('sumnote').textContent='Level '+(S.level+1)+' is unlocked.';NL.hidden=false;NL.onclick=()=>startRound('campaign',S.level+1);}
+      else $('sumnote').textContent='You have finished the whole campaign.';
+    }else{$('sumtitle').textContent='So close';$('sumnote').textContent='Score '+PASS+' of '+CAMP_Q+' to unlock the next level. Read the explanations and try again.';}
+    save('termhunter.campaign',campaign);
+  }else{
+    $('sumstars').textContent='';
+    $('sumtitle').textContent=right===n?'Flawless round!':right>=n*0.7?'Well hunted!':'Keep practising';
+    $('sumnote').textContent=right===n?'Try the next level for a bigger challenge.':'Every explanation shows the working. Have another go.';
+  }
+  show('summary');
+}
+$('again').onclick=()=>startRound(S.mode,S.level);
+$('menu').onclick=()=>{renderStart();show('start');};
+$('quit').onclick=()=>{stopTimer();renderStart();show('start');};
+
+renderStart();
+})();
+</script>
+</body>
+</html>
